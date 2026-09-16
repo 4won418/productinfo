@@ -260,7 +260,7 @@
       if (!groups[code]) {
         groups[code] = {
           브랜드명: row.브랜드명,
-          년도명: row.년도명,
+          년도명: String(row.년도명),
           시즌명: row.시즌명,
           기획명: row.기획명 === '수입모자' ? '모자' : row.기획명,
           복종명: row.복종명,
