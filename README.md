@@ -29,15 +29,15 @@ KANGOL 브랜드의 8,000+ 상품을 한눈에 조회하고 상세 정보를 확
 
 브라우저에서 바로 열기:
 ```
-https://YOUR_USERNAME.github.io/product-map/상품정보맵.html
+https://4won418.github.io/productinfo
 ```
 
 ### 로컬 실행
 
 1. 이 Repository를 Clone:
 ```bash
-git clone https://github.com/YOUR_USERNAME/product-map.git
-cd product-map
+git clone https://github.com/4won418/productinfo.git
+cd productinfo
 ```
 
 2. Python HTTP 서버 실행:
@@ -47,7 +47,7 @@ python -m http.server 8000
 
 3. 브라우저 열기:
 ```
-http://localhost:8000/상품정보맵.html
+http://localhost:8000
 ```
 
 ---
@@ -55,7 +55,7 @@ http://localhost:8000/상품정보맵.html
 ## 📁 파일 구조
 
 ```
-product-map/
+productinfo/
 ├── 상품정보맵.html              # 메인 웹 페이지
 ├── product_data.json           # 상품 데이터 (8,065개)
 ├── README.md                   # 이 파일
