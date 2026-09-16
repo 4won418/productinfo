@@ -26,12 +26,15 @@
   * { box-sizing: border-box; }
   body { margin:0; font-family:var(--font-stack); background:var(--color-bg); color:var(--color-text); -webkit-font-smoothing:antialiased; }
 
-  .topnav { background:var(--color-card); border-bottom:1px solid var(--color-border); padding:var(--sp-24); position:sticky; top:0; z-index:100; box-shadow:var(--shadow-light); transition:padding .25s ease; }
-  .topnav-title-wrap { margin-bottom:var(--sp-24); transition:margin .25s ease; }
+  /* 제목 바만 화면 상단에 고정되고, 필터 영역은 일반 문서 흐름을 따라 스크롤되어 자연스럽게 사라진다 */
+  .topnav-title-bar { background:var(--color-card); border-bottom:1px solid var(--color-border); padding:var(--sp-24) var(--sp-24) var(--sp-16); position:sticky; top:0; z-index:100; box-shadow:var(--shadow-light); }
+  .topnav-title-wrap { }
   .topnav-title { font-size:24px; font-weight:800; margin:0; letter-spacing:.5px; color:var(--color-base); }
   .topnav-subtitle { font-size:12px; color:var(--color-text-light); margin-top:4px; font-weight:500; }
 
-  .filter-section { display:flex; flex-wrap:wrap; gap:var(--sp-24); align-items:flex-start; overflow:hidden; max-height:2000px; opacity:1; transition:max-height .25s ease, opacity .2s ease; }
+  .topnav-filters { background:var(--color-card); padding:var(--sp-16) var(--sp-24) var(--sp-24); border-bottom:1px solid var(--color-border); position:relative; z-index:90; }
+
+  .filter-section { display:flex; flex-wrap:wrap; gap:var(--sp-24); align-items:flex-start; }
   .filter-group { display:flex; flex-direction:column; gap:var(--sp-8); min-width:220px; position:relative; }
   .filter-label { font-size:12px; font-weight:700; color:var(--color-text); text-transform:uppercase; letter-spacing:.5px; }
 
@@ -112,7 +115,8 @@
   .empty-state-icon { font-size:48px; margin-bottom:var(--sp-16); }
 
   @media (max-width:768px) {
-    .topnav { padding:var(--sp-16); }
+    .topnav-title-bar { padding:var(--sp-16) var(--sp-16) var(--sp-12); }
+    .topnav-filters { padding:var(--sp-12) var(--sp-16) var(--sp-16); }
     .filter-section { flex-direction:column; gap:var(--sp-12); }
     .filter-group { width:100%; min-width:auto; }
     .products-grid { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:var(--sp-12); }
@@ -123,21 +127,18 @@
     .qty-table { font-size:11px; }
     /* iOS Safari는 입력창 font-size가 16px보다 작으면 포커스 시 자동으로 화면을 확대한다 */
     .search-input { font-size:16px; }
-
-    /* 아래로 스크롤하면 필터 영역을 접어서 상품 카드가 보이는 공간을 늘린다 (제목은 유지) */
-    .topnav.compact { padding-bottom:var(--sp-12); }
-    .topnav.compact .topnav-title-wrap { margin-bottom:0; }
-    .topnav.compact .filter-section { max-height:0; opacity:0; }
   }
 </style>
 </head>
 <body>
-  <div class="topnav">
+  <div class="topnav-title-bar">
     <div class="topnav-title-wrap">
       <div class="topnav-title">KANGOL PRODUCT INFO</div>
       <div class="topnav-subtitle">상품기준 : 2024년-2026년</div>
     </div>
+  </div>
 
+  <div class="topnav-filters">
     <div class="filter-section">
       <div class="filter-group">
         <label class="filter-label">년도</label>
@@ -580,39 +581,6 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
   });
-
-  // 모바일에서 아래로 스크롤하면 필터 영역을 접어 상품 카드 공간을 확보하고,
-  // 위로 스크롤하거나 맨 위 근처로 오면 다시 펼친다.
-  (function initCompactHeader() {
-    const topnav = document.querySelector('.topnav');
-    let lastY = window.scrollY;
-    let ticking = false;
-
-    function onScroll() {
-      const currentY = window.scrollY;
-      const categoryOpen = document.getElementById('categoryPanel').classList.contains('open');
-
-      if (!categoryOpen) {
-        if (currentY <= 60) {
-          topnav.classList.remove('compact');
-        } else if (currentY > lastY) {
-          topnav.classList.add('compact');
-        } else if (currentY < lastY) {
-          topnav.classList.remove('compact');
-        }
-      }
-
-      lastY = currentY;
-      ticking = false;
-    }
-
-    window.addEventListener('scroll', () => {
-      if (!ticking) {
-        requestAnimationFrame(onScroll);
-        ticking = true;
-      }
-    }, { passive: true });
-  })();
 
   window.addEventListener('load', loadData);
 </script>
