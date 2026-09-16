@@ -121,6 +121,8 @@
     .modal-details { grid-template-columns:1fr; }
     .modal-content { width:95%; padding:var(--sp-16); }
     .qty-table { font-size:11px; }
+    /* iOS Safari는 입력창 font-size가 16px보다 작으면 포커스 시 자동으로 화면을 확대한다 */
+    .search-input { font-size:16px; }
   }
 </style>
 </head>
@@ -132,6 +134,11 @@
     </div>
 
     <div class="filter-section">
+      <div class="filter-group">
+        <label class="filter-label">년도</label>
+        <div class="multi-select" id="yearFilter"></div>
+      </div>
+
       <div class="filter-group">
         <label class="filter-label">시즌</label>
         <div class="multi-select" id="seasonFilter"></div>
@@ -191,11 +198,26 @@
   let planningCategoryMap = {};
 
   let filters = {
+    years: new Set(),
     seasons: new Set(),
     plannings: new Set(),
     categories: new Set(),
     search: ''
   };
+
+  // 정렬 우선순위: 목록에 없는 값은 뒤로 밀려 알파벳/가나다순으로 붙는다
+  const SEASON_ORDER = ['봄/여름', '가을/겨울'];
+  const PLANNING_ORDER = ['가방', '의류', '의류(여성)', '모자'];
+
+  function sortByOrder(items, order) {
+    return [...items].sort((a, b) => {
+      const ia = order.indexOf(a), ib = order.indexOf(b);
+      if (ia === -1 && ib === -1) return a.localeCompare(b);
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    });
+  }
 
   const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/4won418/productinfo/main';
   const IMAGE_BASE_PATH = GITHUB_RAW_URL + '/product-images';
@@ -233,7 +255,7 @@
           브랜드명: row.브랜드명,
           년도명: row.년도명,
           시즌명: row.시즌명,
-          기획명: row.기획명,
+          기획명: row.기획명 === '수입모자' ? '모자' : row.기획명,
           복종명: row.복종명,
           수입품번: row.수입품번,
           품번: row.품번,
@@ -266,8 +288,9 @@
     const map = {};
     rows.forEach(row => {
       if (!row.기획명 || !row.복종명) return;
-      if (!map[row.기획명]) map[row.기획명] = new Set();
-      map[row.기획명].add(row.복종명);
+      const planning = row.기획명 === '수입모자' ? '모자' : row.기획명;
+      if (!map[planning]) map[planning] = new Set();
+      map[planning].add(row.복종명);
     });
     const result = {};
     Object.keys(map).forEach(k => { result[k] = [...map[k]].sort(); });
@@ -289,9 +312,11 @@
   }
 
   function initializeFilters() {
-    const seasons = [...new Set(allProducts.map(p => p.시즌명).filter(Boolean))].sort();
-    const plannings = [...new Set(allProducts.map(p => p.기획명).filter(Boolean))].sort();
+    const years = [...new Set(allProducts.map(p => p.년도명).filter(Boolean))].sort();
+    const seasons = sortByOrder([...new Set(allProducts.map(p => p.시즌명).filter(Boolean))], SEASON_ORDER);
+    const plannings = sortByOrder([...new Set(allProducts.map(p => p.기획명).filter(Boolean))], PLANNING_ORDER);
 
+    renderFilter('yearFilter', years, 'years');
     renderFilter('seasonFilter', seasons, 'seasons');
     renderFilter('planningFilter', plannings, 'plannings');
     renderCategoryDropdown();
@@ -387,6 +412,7 @@
 
   function applyFilters() {
     filteredProducts = allProducts.filter(p => {
+      if (filters.years.size > 0 && !filters.years.has(p.년도명)) return false;
       if (filters.seasons.size > 0 && !filters.seasons.has(p.시즌명)) return false;
       if (filters.plannings.size > 0 && !filters.plannings.has(p.기획명)) return false;
       if (filters.categories.size > 0 && !filters.categories.has(p.복종명)) return false;
